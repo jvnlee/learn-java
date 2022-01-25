@@ -33,7 +33,7 @@ ec2.equals(ec); // true
 
 &nbsp;
 
-### 2. hashcode
+### 2. hashCode
 
 - 매개 변수: 없음
 
@@ -60,7 +60,7 @@ class HashCodeExample {
 }
 ```
 
-> `String`에 오버라이딩된 `hashcode`와는 달리, `System.identityHashCode`는 객체의 주소값으로 해시코드를 생성함.
+> `String`에 오버라이딩된 `hashCode`와는 달리, `System.identityHashCode`는 객체의 주소값으로 해시코드를 생성함.
 >
 > 따라서, 설령 두 `String` 객체의 해시코드가 같아도 다른 객체임을 확인할 수 있음.
 
@@ -669,9 +669,436 @@ int i = Integer.parseInt("77");
 // Integer i = Integer.valueOf("77); 과 같은데, valueOf는 반환타입이 Integer임.
 ```
 
+`parseInt`처럼 숫자로 바꿔주는 메서드는 제시된 문자열에 공백이 있거나 문자가 포함되어있으면 `NumberFormatException`을 던짐
+
+> 단, 부호를 의미하는 기호(+, -)나 점(.), 타입을 나타내는 접미사(f, L 등)는 해당 타입에 맞게 변환하려는 경우에 한해 허용됨
+>
+> ```java
+> String s = "10.0f";
+> float i = Float.parseFloat(s);
+> System.out.println(i);
+> ```
+
 `String`을 `char`로 변환하려면 `charAt` 활용
 
 ```java
 String s = "a";
 char c = s.charAt(0);
 ```
+
+&nbsp;
+
+## StringBuffer 클래스와 StringBuilder 클래스
+
+`String`은 인스턴스 생성 시 지정된 문자열을 변경할 수 없지만, `StringBuffer`는 가능
+
+(내부에 문자열 편집 기능을 하는 `buffer`를 가지고 있음)
+
+> 작업 과정을 고려해서 처음에 `buffer`의 길이를 넉넉하게 잡아줘야 나중에 길이 수정하는 번거로움이 줄어듦.
+
+&nbsp;
+
+## StringBuffer의 생성자
+
+`StringBuffer` 인스턴스를 생성할 때도 `char`배열이 생성되고, 이 배열은 문자열의 저장과 편집을 위한 공간(buffer)로 활용됨
+
+```java
+public StringBuffer(int length) {
+    value = new char[length];
+    ...
+}
+
+public StringBuffer() {
+    this(16); // 길이를 지정하지 않으면 16이 기본값
+}
+
+public StringBuffer(String str) {
+    this(str.length() + 16);
+    ...
+}
+```
+
+buffer의 크기를 변경할 때는, char배열 길이의 불변성 때문에 새로 배열을 생성하여 거기에 기존 배열의 값을 복제한뒤 기존 참조변수(value)에 재할당해줌
+
+&nbsp;
+
+### StringBuffer의 변경
+
+"Hello"라는 내용의 `StringBuffer`를 만들어보자.
+
+```java
+StringBuffer sb = new StringBuffer("Hello"); // 문자열의 길이인 5에 16을 더한 21자리의 버퍼가 생성됨
+```
+
+여기에 `append()` 메서드를 활용해 "Java"라는 문자열을 추가
+
+```java
+sb.append("Java"); // HelloJava
+```
+
+`append()`는 반환타입이 `StringBuffer`이며 자신의 주소값을 반환함.
+
+따라서 연속적 호출이 가능
+
+```java
+sb.append("apple").append("banana").append("orange");
+```
+
+&nbsp;
+
+### StringBuffer의 비교
+
+`StringBuffer`는 `String`처럼 `equals` 메서드를 오버라이딩 하지 않아서 실제 주소값이 비교됨. (등가비교연산자 `==`와 같은 방식)
+
+그래서 단순히 문자열의 내용만 비교하려면 `toString()`을 사용해 `String`으로 변환한 뒤 비교해야함.
+
+```java
+StringBuffer sb1 = new StringBuffer("hello");
+StringBuffer sb2 = new StringBuffer("hello");
+
+System.out.println(sb1.equals(sb2)); // false
+System.out.println(sb1 == sb2); // false
+
+String s1 = sb1.toString();
+String s2 = sb2.toString();
+
+System.out.println(sb1.equals(sb2)); // true
+```
+
+&nbsp;
+
+### StringBuffer 클래스의 생성자와 메서드
+
+`String` 클래스와 유사한 기능을 하는 메서드들이 있고, 추가/변경/삭제와 같이 저장된 문자열을 변형하는 메서드도 제공함.
+
+1. StringBuffer()
+
+   16개의 문자가 들어갈 수 있는 buffer를 가진 `StringBuffer` 인스턴스 생성
+
+   StringBuffer(int length)
+
+   지정된 개수의 문자가 들어갈 수 있는 buffer를 가진 `StringBuffer` 인스턴스 생성
+
+   StringBuffer(String str)
+
+   지정된 문자열이 들어갈 수 있는 buffer를 가진 `StringBuffer` 인스턴스 생성
+
+   > buffer의 길이 = 지정된 문자열의 길이 + 16
+
+2. StringBuffer append(타입 변수)
+
+   주어진 매개변수의 값을 문자열로 변환한 뒤, 인스턴스에 저장되어있던 문자열 뒤에 덧붙임
+
+   매개변수 타입에는 기본형과 `String`, `Object`가 들어갈 수 있음.
+
+   ```java
+    StringBuffer sb = new StringBuffer("Hello");
+    sb.append('J').append(7.7f); // HelloJ7.7
+   ```
+
+3. int capacity()
+
+   `StringBuffer` 인스턴스의 buffer 길이를 반환.
+
+4. int length()
+
+   `StringBuffer` 인스턴스의 buffer 안에 담긴 문자열의 길이를 반환.
+
+5. char charAt()
+
+   지정된 인덱스에 있는 문자 반환
+
+6. StringBuffer delete(int start, int end)
+
+   지정된 시작 인덱스부터 (끝 인덱스 - 1)까지의 문자 제거
+
+   ```java
+   StringBuffer sb = new StringBuffer("Hello");
+   sb.delete(1, 3); // Hlo
+   ```
+
+7. StringBuffer deleteCharAt(int index)
+
+   지정된 인덱스의 문자 제거
+
+8. StringBuffer insert(int index, 타입 변수)
+
+   지정된 인덱스에 2번째 매개변수 값을 문자열로 변환하여 삽입
+
+   매개변수 타입에는 기본형과 `String`, `Object`가 들어갈 수 있음.
+
+   ```java
+   StringBuffer sb = new StringBuffer("Hello");
+   sb.insert(2, "abcede"); // Heabcdello
+   ```
+
+9. StringBuffer replace(int start, int end, String str)
+
+   지정된 시작 인덱스부터 (끝 인덱스 - 1)까지의 문자를 주어진 문자열로 바꿈
+
+   ```java
+   StringBuffer sb = new StringBuffer("Java is fun");
+   sb.replace(8, 11, "interesting"); // Java is interesting
+   ```
+
+10. StringBuffer reverse()
+
+    `StringBuffer` 인스턴스의 buffer 안에 담긴 문자열을 반대로 바꾸어 반환.
+
+    ```java
+    StringBuffer sb = new StringBuffer("abcdefg");
+    sb.reverse(); // gfedcba
+    ```
+
+11. void setCharAt(int index, char ch)
+
+    지정된 인덱스의 문자를 주어진 문자로 바꿈.
+
+12. void setLength(int newLength)
+
+    지정된 길이로 문자열의 길이를 변경하고, 늘리는 경우에는 빈 공간에 '\u0000'로 채움
+
+    ```java
+    StringBuffer sb = new StringBuffer("ABCDE");
+    sb.setLength(10); // "ABCDE     "
+    ```
+
+13. String toString()
+
+    `StringBuffer` 인스턴스의 문자열을 `String`으로 변환
+
+14. String substring(int start[, int end])
+
+    주어진 시작 인덱스부터 맨끝(또는 끝 인덱스 - 1)까지에 해당하는 문자열을 얻음.
+
+&nbsp;
+
+### StringBuilder
+
+(아직 안배운 내용) `StringBuffer`의 동기화는 애플리케이션의 성능을 저하시키는 이슈가 있는데,
+
+그래서 `StringBuffer`에서 쓰레드의 동기화만 뺀 `StringBuilder`라는 개념이 추가되었음.
+
+사용법은 모두 같고 이름만 다름.
+
+&nbsp;
+
+## Math 클래스
+
+`Math` 클래스는 수학적 계산에 유용한 메서드를 제공.
+
+인스턴스 변수가 없기 때문에 생성자를 `private`으로 막아놔서 인스턴스 생성이 불가능함.
+
+> 멤버 변수로는 자연로그 e와 원주율 pi만 상수로 저장되어있음
+
+&nbsp;
+
+### 올림, 버림, 반올림
+
+1. 올림
+
+   `Math.ceil`: 주어진 값보다 크거나 같은 정수 중에서 가장 작은 값(`double`) 반환
+
+   ```java
+   double value = 78.9123;
+   System.out.println(Math.ceil(value)); // 79.0
+   ```
+
+2. 버림
+
+   `Math.floor`: 주어진 값보다 작거나 같은 정수 중에서 가장 큰 값(`double`) 반환
+
+   ```java
+   double value = 78.9123;
+   System.out.println(Math.floor(value)); // 78.0
+   ```
+
+3. 반올림
+
+   `Math.round`: 주어진 값의 소수점 첫째자리에서 반올림한 값(`int`) 반환
+
+   > 첫째자리 밑에서 반올림 하고 싶다면, 10<sup>n</sup>으로 곱한 뒤 round 하고 다시 같은 수로 나눠주면 됨.
+
+   ```java
+   double value = 78.9123;
+   System.out.println(Math.round(value)); // 79
+   ```
+
+   `Math.rint`: 주어진 값의 소수점 첫째자리에서 반올림한 값(`double`) 반환
+
+   > 주어진 값이 정가운데의 수인 경우에는, 가장 가까운 짝수 정수 반환
+
+   ```java
+   double value = 78.9123;
+   System.out.println(Math.rint(value)); // 79.0
+
+   double middle = -1.5;
+   System.out.println(Math.rint(middle)); // -2.0
+   ```
+
+&nbsp;
+
+### 예외를 발생시키는 메서드
+
+`JDK` 1.8부터 이름에 `Exact`가 들어가는 메서드들이 추가되었는데, 이들을 사용하면 숫자 간의 연산 과정에서 발생하는 에외(`ArithmeticException`) 처리가 가능함.
+
+> 연산 도중 오버플로우가 발생하면 `ArithmeticException`을 던져줌
+
+```java
+int addExact(int x, int y); // x + y
+int subtractExact(int x, int y); // x - y
+int multiplyExact(int x, int y); // x * y
+int incrementExact(int x); // x++
+int decrementExact(int x); // x--
+int negateExact(int x); // -x
+int toIntExact(long x); // long 타입을 int 타입으로 형변환
+```
+
+&nbsp;
+
+`int`의 범위는 -2147483648 ~ 2147483648 이므로 이 범위를 넘어가면 오버플로우가 발생함.
+
+> `negateExact`의 경우는 부호를 반대로 바꾸는 과정인 (~x + 1)이 오버플로우를 유발
+>
+> ```java
+> class negateExactExample {
+>    public static void main(String[] args) {
+>        int i = Integer.MIN_VALUE;
+>        System.out.println(i); // -2147483648
+>        System.out.println(-i); // -2147483648
+>        // 부호 연산자가 올바로 작동하지 않는 이유는 오버플로우 때문
+>
+>        try {
+>            System.out.println(Math.negateExact(i)); // 오버플로우로 인한 예외 발생
+>        } catch (ArithmeticException e) {
+>            System.out.println(Math.negateExact((long)i)); // 2147483648
+>            // long으로 형변환한 뒤에 진행하면 정상 작동
+>        }
+>    }
+> }
+> ```
+
+&nbsp;
+
+### StrictMath 클래스
+
+엄밀히는 `Java`의 `Math`클래스 메서드들은 성능을 위해 각 OS의 API를 활용하기 때문에, OS 종속적이라고 볼 수 있음.
+
+OS에 따른 결과 값의 차이를 없애기 위해 만들어진 것이 `StrictMath` 클래스.
+
+&nbsp;
+
+## Wrapper 클래스
+
+`Java`에서 기본형은 객체가 아니지만, 상황에 따라 이들을 객체로 다뤄야할 필요가 있음.
+
+ex)
+
+- 매개변수가 객체 타입을 요구할 때
+
+- 기본형이 아닌 객체 타입으로 저장해야 할 때
+
+- 객체 간의 비교가 필요할 때
+
+이 때, 8가지의 기본형을 객체처럼 다룰 수 있게 해주는 것이 Wrapper 클래스임.
+
+|  기본형   | Wrapper 클래스 | <center>생성자 매개변수 타입</center> |
+| :-------: | :------------: | ------------------------------------- |
+| `boolean` |   `Boolean`    | `boolean` 또는 `String`               |
+|  `char`   |  `Character`   | `char`                                |
+|  `byte`   |     `Byte`     | `byte` 또는 `String`                  |
+|  `short`  |    `Short`     | `short` 또는 `String`                 |
+|   `int`   |   `Integer`    | `int` 또는 `String`                   |
+|  `long`   |     `Long`     | `long` 또는 `String`                  |
+|  `float`  |    `Float`     | `float` 또는 `double` 또는 `String`   |
+| `double`  |    `Double`    | `double` 또는 `String`                |
+
+> 생성자의 매개 변수 타입이 어긋나면 예외 발생
+
+생성자로 받아온 값을 멤버 변수에 저장하고, 필요한 메서드를 제공함
+
+래퍼 클래스의 `equals()`는 모두 주소값이 아닌 객체가 저장하고 있는 값을 비교하도록 오버라이딩 되어있음
+
+`toString()`도 오버라이딩 되어있어 객체가 저장하고 있는 값을 문자열로 변환하여 반환함.
+
+&nbsp;
+
+### Number 클래스
+
+숫자 관련 Wrapper 클래스들의 조상인 추상클래스.
+
+자손 클래스로 `Byte`부터 `Double`까지와 `BigInteger`, `BigDecimal`를 가지고 있음
+
+> `BigInteger`: `long`의 범위를 넘어서는 매우 큰 범위의 정수
+>
+> `BigDecimal`: `double`의 범위를 넘어서는 매우 큰 범위의 부동소수점 수
+
+&nbsp;
+
+### 문자열을 숫자로 변환하기
+
+아래 3가지 중에서 주로 2번 방법을 사용함.
+
+```java
+// 1
+int i = new Integer("777").intValue();
+// 2
+int i = Integer.parseInt("777");
+// 3
+Integer i = Integer.valueOf("777");
+```
+
+`타입.parse타입()`류를 사용하면 반환 타입이 기본형이지만,
+
+`타입.valueOf()`류를 사용하면 반환 타입이 Wrapper 클래스 타입임.
+
+> 성능은 `타입.parse타입()`쪽이 조금 더 빠름
+
+`JDK` 1.5부터 auto-boxing이 가능해지면서 기본형과 Wrapper 클래스형을 다루는 것의 차이가 없어짐.
+
+첫번째 인자의 숫자가 10진수가 아니라면, 두번째 매개변수로 몇 진법인지 명시해주면 됨.
+
+```java
+int i = Integer.parseInt("100", 2); // 4
+```
+
+16진법처럼 알파벳이 끼는 경우에는 진법을 생략하면 예외가 발생할 수 있으므로 주의.
+
+```java
+int i = Integer.parseInt("FF"); // NumberFormatException 발생
+int i = Integer.parseInt("FF", 16); // 255
+```
+
+&nbsp;
+
+### 오토박싱 & 언박싱
+
+`JDK` 1.5 이전까지는 기본형과 참조형의 직접 연산이 불가능해서, 기본형을 boxing한 후에 연산을 했음.
+
+- 박싱(boxing): 기본 타입에 대응하는 Wrapper 클래스로 만드는 동작
+
+```java
+int i1 = 77;
+Integer i2 = new Integer(i1);
+```
+
+- 언박싱(unboxing): Wrapper 클래스에서 기본 타입으로 변환하는 동작
+
+```java
+int i1 = new Integer(77);
+int i2 = i1.intValue();
+```
+
+`JDK` 1.5부터는 이 과정들을 자바 컴파일러가 필요한 경우에 맞게 자동적으로 시켜줌 (auto-boxing, auto-unboxing)
+
+```java
+ArrayList<Integer> list = new ArrayList<Integer>();
+list.add(7); // auto-boxing
+int value = list.get(0); // auto-unboxing
+```
+
+`Integer`타입의 원소로 이루어진 `ArrayList`를 생성함.
+
+7이라는 `int`형 원소를 추가할 때, 컴파일러가 7을 `new Integer(7)`로 박싱해줌
+
+다시 `list`에서 7을 가져올 때 컴파일러가 `intValue()`를 호출해서 `Integer`형을 `int`형으로 언박싱해줌
